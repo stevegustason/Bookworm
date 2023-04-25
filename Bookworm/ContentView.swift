@@ -11,11 +11,28 @@ struct ContentView: View {
     // Add our managed object context
     @Environment(\.managedObjectContext) var moc
     
-    // Fetch request reading all the books we have
-    @FetchRequest(sortDescriptors: []) var books: FetchedResults<Book>
+    // Fetch request reading all the books we have. Here, we're sorting ascending alphabetically on title, then ascending alphabetically on author. Having two or more sorts can be useful - for example, if the user added the book “Forever” by Pete Hamill, then added “Forever” by Judy Blume – an entirely different book that just happens to have the same title – then specifying a second sort field is helpful.
+    @FetchRequest(sortDescriptors: [
+        SortDescriptor(\.title),
+        SortDescriptor(\.author)
+    ]) var books: FetchedResults<Book>
 
     // Variable to track showing our AddBook sheet
     @State private var showingAddScreen = false
+    
+    // Function to delete books from CoreData
+    func deleteBooks(at offsets: IndexSet) {
+        for offset in offsets {
+            // Find this book in our fetch request
+            let book = books[offset]
+
+            // Delete it from the context
+            moc.delete(book)
+        }
+
+        // Save the context
+        try? moc.save()
+    }
     
     var body: some View {
         NavigationView {
@@ -24,8 +41,8 @@ struct ContentView: View {
                 ForEach(books) { book in
                     // Link out to more information about our book
                     NavigationLink {
-                        // All of our data is optional, so we need to use nil coalescing throughout
-                        Text(book.title ?? "Unknown Title")
+                        // Add a link to our detail view of the specified book
+                        DetailView(book: book)
                     } label: {
                         // Our HStack will have our emoji rating, passing in the book's rating, then a VStack with the book's title and the author, making sure to unwrap all of the optionals
                         HStack {
@@ -33,6 +50,7 @@ struct ContentView: View {
                                 .font(.largeTitle)
                             
                             VStack(alignment: .leading) {
+                                // All of our data is optional, so we need to use nil coalescing throughout
                                 Text(book.title ?? "Unknown Title")
                                     .font(.headline)
                                 Text(book.author ?? "Unknown Author")
@@ -41,9 +59,12 @@ struct ContentView: View {
                         }
                     }
                 }
+                // Add swipe to delete using our deleteBooks function
+                .onDelete(perform: deleteBooks)
             }
                 .navigationTitle("Bookworm")
                 .toolbar {
+                    // Toolbar item to show a plus sign on the top right to add a new book
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
                             // Toggle showingAddScreen to true
@@ -51,6 +72,10 @@ struct ContentView: View {
                         } label: {
                             Label("Add Book", systemImage: "plus")
                         }
+                    }
+                    // Second toolbar item in the top left (leading instead of trailing) to give us an edit button to delete multiple books at once
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        EditButton()
                     }
                 }
             // Present our AddBookView when showingAddScreen is true, aka when the user clicks the plus button

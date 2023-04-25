@@ -53,6 +53,8 @@ struct ContentView: View {
                                 // All of our data is optional, so we need to use nil coalescing throughout
                                 Text(book.title ?? "Unknown Title")
                                     .font(.headline)
+                                // Conditional formatting for poorly rated books
+                                    .foregroundColor(book.rating == 1 ? .red : .black)
                                 Text(book.author ?? "Unknown Author")
                                     .foregroundColor(.secondary)
                             }

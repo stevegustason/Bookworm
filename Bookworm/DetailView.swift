@@ -54,14 +54,20 @@ struct DetailView: View {
             Text(book.author ?? "Unknown author")
                 .font(.title)
                 .foregroundColor(.secondary)
-
-            // User review (unwrapped)
-            Text(book.review ?? "No review")
-                .padding()
-
+                .padding(5)
+            
             // And our rating view showing the book's rating, using a constant binding so the user can't adjust the rating from this view
             RatingView(rating: .constant(Int(book.rating)))
                 .font(.largeTitle)
+                .padding(5)
+
+            // Add the date the user wrote their review
+            Text(book.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown")
+                .padding(5)
+            
+            // User review (unwrapped)
+            Text(book.review ?? "No review")
+                .padding()
         }
         .navigationTitle(book.title ?? "Unknown Book")
         .navigationBarTitleDisplayMode(.inline)

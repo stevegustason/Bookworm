@@ -22,7 +22,16 @@ struct AddBookView: View {
     @State private var review = ""
     
     // Property to store genre options
-    let genres = ["Fantasy", "Horror", "Kids", "Mystery", "Poetry", "Romance", "Thriller"]
+    let genres = ["Select a genre", "Fantasy", "Horror", "Kids", "Mystery", "Poetry", "Romance", "Thriller"]
+    
+    // Computed property to make sure all of our address fields are filled out (and not just whitespace)
+    var fieldsFilledOut: Bool {
+        if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || author.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || genre.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || genre == "Select a genre" {
+            return false
+        }
+    
+    return true
+    }
     
     var body: some View {
         NavigationView {
@@ -54,6 +63,9 @@ struct AddBookView: View {
                         // Generate our id
                         newBook.id = UUID()
                         
+                        // Save the current date
+                        newBook.date = Date.now
+                        
                         // Save each of our values from the values above
                         newBook.title = title
                         newBook.author = author
@@ -69,6 +81,7 @@ struct AddBookView: View {
                         dismiss()
                     }
                 }
+                .disabled(fieldsFilledOut == false)
             }
             .navigationTitle("Add Book")
         }
